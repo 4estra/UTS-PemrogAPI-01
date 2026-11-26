@@ -2,6 +2,36 @@
 
 REST API **Toko Online** dengan Express.js dan PostgreSQL. API mengelola dua resource yang berelasi one-to-many: `kategori` (induk) dan `produk` (anak). Tabel `produk` memakai **soft delete**, tabel `kategori` memakai **hard delete**.
 
+## Navigasi
+
+**Di halaman ini:**
+[Anggota](#anggota-kelompok) ·
+[Teknologi](#teknologi) ·
+[Cara menjalankan](#cara-menjalankan) ·
+[Rancangan tabel](#rancangan-tabel-dan-relasi) ·
+[Struktur project](#struktur-project) ·
+[Format respons](#format-respons) ·
+[Endpoint](#daftar-endpoint) ·
+[Contoh body](#contoh-body-dan-respons) ·
+[Keputusan desain](#keputusan-desain) ·
+[Hasil pengujian](#hasil-pengujian)
+
+**Keputusan desain:**
+[1. PUT dan PATCH](#1-mengapa-ada-put-dan-patch) ·
+[2. Soft delete dan UNIQUE](#2-perilaku-soft-delete-terhadap-unique) ·
+[3. Soft delete dan FK](#3-perilaku-soft-delete-terhadap-foreign-key) ·
+[4. Hard delete induk](#4-mengapa-hard-delete-pada-tabel-induk) ·
+[5. Kode error PG](#5-pemetaan-kode-error-postgresql)
+
+**Dokumentasi lain:**
+[Pemahaman soal](docs/01-pemahaman-soal.md) ·
+[Pembagian peran](docs/02-pembagian-peran.md) ·
+[Jebakan dan solusi](docs/03-jebakan-dan-solusi.md) ·
+[Spesifikasi API](docs/04-spesifikasi-api.md) ·
+[Panduan Postman](docs/05-panduan-postman.md) ·
+[Checklist QA](docs/06-checklist-qa-celah.md) ·
+[Checklist pengumpulan](docs/07-checklist-pengumpulan.md)
+
 ## Anggota kelompok
 
 | Nama | NIM | Peran |
