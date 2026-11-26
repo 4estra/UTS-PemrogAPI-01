@@ -1,37 +1,25 @@
-# UTS-PemrogAPI - [namakelompok]
+<div align="center">
 
-REST API **Toko Online** dengan Express.js dan PostgreSQL. API mengelola dua resource yang berelasi one-to-many: `kategori` (induk) dan `produk` (anak). Tabel `produk` memakai **soft delete**, tabel `kategori` memakai **hard delete**.
+# 🛒 UTS-PemrogAPI - [namakelompok]
 
-## Navigasi
+**REST API Toko Online dengan Express.js dan PostgreSQL**
 
-**Di halaman ini:**
-[Anggota](#anggota-kelompok) ·
-[Teknologi](#teknologi) ·
-[Cara menjalankan](#cara-menjalankan) ·
-[Rancangan tabel](#rancangan-tabel-dan-relasi) ·
-[Struktur project](#struktur-project) ·
-[Format respons](#format-respons) ·
-[Endpoint](#daftar-endpoint) ·
-[Contoh body](#contoh-body-dan-respons) ·
-[Keputusan desain](#keputusan-desain) ·
-[Hasil pengujian](#hasil-pengujian)
+Dua resource one-to-many: `kategori` (hard delete) → `produk` (soft delete)
 
-**Keputusan desain:**
-[1. PUT dan PATCH](#1-mengapa-ada-put-dan-patch) ·
-[2. Soft delete dan UNIQUE](#2-perilaku-soft-delete-terhadap-unique) ·
-[3. Soft delete dan FK](#3-perilaku-soft-delete-terhadap-foreign-key) ·
-[4. Hard delete induk](#4-mengapa-hard-delete-pada-tabel-induk) ·
-[5. Kode error PG](#5-pemetaan-kode-error-postgresql)
+![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)
+![Postman](https://img.shields.io/badge/Postman-FF6C37?logo=postman&logoColor=white)
 
-**Dokumentasi lain:**
-[Pemahaman soal](docs/01-pemahaman-soal.md) ·
-[Pembagian peran](docs/02-pembagian-peran.md) ·
-[Jebakan dan solusi](docs/03-jebakan-dan-solusi.md) ·
-[Spesifikasi API](docs/04-spesifikasi-api.md) ·
-[Panduan Postman](docs/05-panduan-postman.md) ·
-[Checklist QA](docs/06-checklist-qa-celah.md) ·
-[Checklist pengumpulan](docs/07-checklist-pengumpulan.md)
+[🚀 Cara menjalankan](#cara-menjalankan) •
+[📋 Endpoint](#daftar-endpoint) •
+[🧠 Keputusan desain](#keputusan-desain) •
+[🧪 Hasil pengujian](#hasil-pengujian) •
+[📚 Dokumentasi](#dokumentasi-tambahan)
 
+</div>
+
+---
 ## Anggota kelompok
 
 | Nama | NIM | Peran |
