@@ -1,184 +1,318 @@
-# CRUD API Mahasiswa
+# UTS-PemrogAPI - [namakelompok]
 
-Contoh REST API untuk mengelola data mahasiswa menggunakan Node.js, Express, dan PostgreSQL.
+REST API **Toko Online** dengan Express.js dan PostgreSQL. API mengelola dua resource yang berelasi one-to-many: `kategori` (induk) dan `produk` (anak). Tabel `produk` memakai **soft delete**, tabel `kategori` memakai **hard delete**.
 
-## Teknologi dan package
+## Anggota kelompok
 
-- **Node.js**: menjalankan aplikasi JavaScript di sisi server.
-- **Express** (`express`): membuat server HTTP dan routing API.
-- **node-postgres** (`pg`): menghubungkan aplikasi ke PostgreSQL.
-- **dotenv**: membaca konfigurasi dari file `.env`.
-- **nodemon** (`devDependency`): menjalankan ulang server otomatis saat kode berubah.
+| Nama | NIM | Peran |
+| --- | --- | --- |
+| [nama] | [nim] | Database dan setup |
+| [nama] | [nim] | Kategori (induk) |
+| [nama] | [nim] | Produk (anak) |
+| [nama] | [nim] | Postman dan error handling |
+| [nama] | [nim] | QA dan dokumentasi |
 
-Instal Node.js dan PostgreSQL terlebih dahulu. Dari folder `02.crud-api-mahasiswa`, install package yang tercatat di `package.json`:
+## Teknologi
 
-```bash
-npm install
+- Node.js dan Express 5
+- PostgreSQL (driver `pg`, memakai `Pool`)
+- dotenv untuk konfigurasi
+- nodemon (development)
+- Postman untuk pengujian
+
+## Cara menjalankan
+
+1. **Prasyarat:** Node.js, npm, dan PostgreSQL sudah terpasang.
+2. **Instal dependency:**
+
+   ```bash
+   npm install
+   ```
+
+3. **Siapkan `.env`** dari contoh, lalu sesuaikan password PostgreSQL:
+
+   ```bash
+   copy .env.example .env      # Windows (CMD)
+   cp .env.example .env        # macOS / Linux / Git Bash
+   ```
+
+   Isi `.env`:
+
+   ```env
+   PORT=3000
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_USER=postgres
+   DB_PASSWORD=isi_password_postgres_anda
+   DB_NAME=db_uts
+   ```
+
+4. **Buat database, tabel, dan data awal:**
+
+   ```bash
+   psql -U postgres -f sql/schema.sql
+   psql -U postgres -d db_uts -f sql/seed.sql
+   ```
+
+   Alternatif: buka pgAdmin, jalankan `CREATE DATABASE db_uts;` secara terpisah, lalu jalankan isi `schema.sql` dan `seed.sql` di Query Tool database `db_uts`.
+
+5. **Jalankan server:**
+
+   ```bash
+   npm run dev      # dengan nodemon
+   npm start        # tanpa nodemon
+   ```
+
+   Server berjalan di `http://localhost:3000`.
+
+6. **Uji dengan Postman:** impor `uts.postman_collection.json` dan environment-nya, pilih environment, lalu jalankan dengan Collection Runner. Panduan: [docs/05-panduan-postman.md](docs/05-panduan-postman.md).
+
+## Rancangan tabel dan relasi
+
+```mermaid
+erDiagram
+    kategori ||--o{ produk : "memiliki banyak"
+    kategori {
+        serial id PK
+        varchar50 nama_kategori "NOT NULL, UNIQUE"
+        varchar200 deskripsi "boleh kosong"
+        timestamp created_at "NOT NULL, DEFAULT NOW()"
+    }
+    produk {
+        serial id PK
+        integer kategori_id FK "NOT NULL, ke kategori(id)"
+        varchar20 kode_produk "NOT NULL, UNIQUE"
+        varchar100 nama_produk "NOT NULL"
+        integer harga "NOT NULL, CHECK harga > 0"
+        integer stok "NOT NULL, DEFAULT 0, CHECK stok >= 0"
+        timestamp created_at "NOT NULL, DEFAULT NOW()"
+        timestamp deleted_at "NULL berarti aktif"
+    }
 ```
 
-Perintah tersebut memasang `express`, `pg`, `dotenv`, dan `nodemon`. Jika ingin memasang package satu per satu:
+**Relasi:** satu `kategori` memiliki banyak `produk`. Kolom `produk.kategori_id` adalah foreign key ke `kategori(id)` **tanpa** `ON DELETE CASCADE`, sehingga PostgreSQL menolak penghapusan kategori yang masih dirujuk produk (error `23503`).
 
-```bash
-npm install express pg dotenv
-npm install --save-dev nodemon
-```
-
-## Struktur directory
+## Struktur project
 
 ```text
-02.crud-api-mahasiswa/
-├── .env
+api-uts/
+├── .env.example
+├── .gitignore
 ├── package.json
-├── package-lock.json
+├── README.md
+├── docs/                      (dokumentasi tambahan)
+├── sql/
+│   ├── schema.sql
+│   └── seed.sql
 └── src/
-    ├── app.js
-    ├── server.js
-    ├── testConnection.js
-    ├── config/
-    │   └── db.js
-    ├── controllers/
-    │   └── mahasiswaController.js
-    ├── middlewares/
-    │   ├── parseId.js
-    │   └── validateMahasiswa.js
-    ├── repositories/
-    │   └── mahasiswaRepository.js
-    └── routes/
-        └── mahasiswaRoutes.js
+    ├── app.js                 (menyusun aplikasi)
+    ├── server.js              (hanya listen)
+    ├── config/db.js           (pg Pool, dibuat sekali)
+    ├── routes/                (kategoriRoutes.js, produkRoutes.js)
+    ├── middlewares/           (parseId.js, validateKategori.js, validateProduk.js)
+    ├── controllers/           (kategoriController.js, produkController.js)
+    └── repositories/          (kategoriRepository.js, produkRepository.js)
 ```
 
-- `.env`: konfigurasi port server dan koneksi PostgreSQL. Jangan masukkan kredensial asli ke Git.
-- `package.json`: metadata project, daftar package, dan perintah `npm`.
-- `package-lock.json`: mengunci versi dependency yang terpasang.
-- `src/app.js`: membuat Express app, memasang JSON parser dan route `/api/mahasiswa`, serta menangani error.
-- `src/server.js`: membaca konfigurasi dan menjalankan server HTTP.
-- `src/testConnection.js`: mencoba koneksi PostgreSQL dengan query sederhana.
-- `src/config/db.js`: membuat dan mengekspor connection pool PostgreSQL.
-- `src/routes/mahasiswaRoutes.js`: memetakan URL dan HTTP method ke middleware serta controller.
-- `src/controllers/mahasiswaController.js`: menangani request, memanggil repository, dan membentuk response.
-- `src/middlewares/parseId.js`: memvalidasi `:id` sebagai bilangan bulat positif.
-- `src/middlewares/validateMahasiswa.js`: memvalidasi semua field untuk POST/PUT dan field yang dikirim untuk PATCH.
-- `src/repositories/mahasiswaRepository.js`: menjalankan query SQL untuk membaca, menambah, mengubah, dan menghapus data.
+Alur satu request: **route → middleware (parseId, validasi) → controller → repository → PostgreSQL**. Seluruh SQL hanya ada di repository dan semua query memakai parameter (`$1`, `$2`, ...).
 
-## Konfigurasi `.env`
+## Format respons
 
-Buat atau lengkapi file `.env` di folder project:
+Sukses:
 
-```env
-PORT=3000
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=password_postgres_anda
-DB_NAME=nama_database
+```json
+{ "status": "success", "message": "...", "data": {} }
 ```
 
-Sesuaikan `DB_USER`, `DB_PASSWORD`, dan `DB_NAME` dengan PostgreSQL lokal Anda. `PORT` bersifat opsional; jika tidak diisi, aplikasi menggunakan port `3000`. Jangan mengunggah `.env` yang berisi kredensial ke repository.
+Daftar menambahkan `count`. Soft delete dan hard delete yang berhasil mengirim `204` tanpa body.
 
-### Menyiapkan database
+Gagal:
 
-Buat database sesuai `DB_NAME`, lalu jalankan SQL berikut di database tersebut. Struktur ini mengikuti field yang digunakan aplikasi:
-
-```sql
-CREATE TABLE mahasiswa (
-  id SERIAL PRIMARY KEY,
-  nim VARCHAR(30) NOT NULL UNIQUE,
-  nama VARCHAR(150) NOT NULL,
-  email VARCHAR(255) NOT NULL UNIQUE,
-  jurusan VARCHAR(150) NOT NULL,
-  angkatan INTEGER NOT NULL CHECK (angkatan >= 2000),
-  deleted_at TIMESTAMPTZ NULL
-);
+```json
+{ "status": "error", "message": "...", "errors": ["..."] }
 ```
 
-Uji koneksi (opsional), lalu jalankan server:
+Field `errors` hanya muncul pada kegagalan validasi. URL tidak dikenal dibalas `404` dengan message `Route tidak ditemukan`. Error server dibalas `500` dengan pesan umum, dan detail error hanya dicetak ke console server.
 
-```bash
-node src/testConnection.js
-npm run dev
+## Daftar endpoint
+
+Base URL: `http://localhost:3000`
+
+### Kategori (induk, hard delete)
+
+| Method | URL | Fungsi | Status |
+| --- | --- | --- | --- |
+| GET | `/api/kategori` | Daftar semua kategori | 200 |
+| GET | `/api/kategori/:id` | Detail satu kategori | 200, 400, 404 |
+| POST | `/api/kategori` | Tambah kategori | 201, 400, 409 |
+| DELETE | `/api/kategori/:id` | Hard delete kategori | 204, 400, 404, 409 |
+
+### Produk (anak, soft delete)
+
+| Method | URL | Fungsi | Status |
+| --- | --- | --- | --- |
+| GET | `/api/produk` | Daftar produk aktif beserta `count` | 200 |
+| GET | `/api/produk/:id` | Detail satu produk aktif | 200, 400, 404 |
+| GET | `/api/kategori/:id/produk` | Produk aktif milik satu kategori | 200, 400, 404 |
+| POST | `/api/produk` | Tambah produk | 201, 400, 409, 422 |
+| PUT | `/api/produk/:id` | Ganti seluruh data (semua field wajib) | 200, 400, 404, 409, 422 |
+| PATCH | `/api/produk/:id` | Ubah sebagian field | 200, 400, 404, 409, 422 |
+| DELETE | `/api/produk/:id` | Soft delete | 204, 400, 404 |
+| PATCH | `/api/produk/:id/restore` | Pulihkan produk yang di-soft delete | 200, 400, 404 |
+| DELETE | `/api/produk/:id/permanent` | *(nilai tambah)* hard delete produk yang sudah di-soft delete | 204, 400, 404, 409 |
+| GET | `/api/produk?kategori_id=1` | *(nilai tambah)* filter produk per kategori | 200, 400 |
+
+Spesifikasi lengkap (aturan validasi, arti tiap status): [docs/04-spesifikasi-api.md](docs/04-spesifikasi-api.md).
+
+### Contoh body dan respons
+
+**POST `/api/kategori`**
+
+```json
+{ "nama_kategori": "Elektronik", "deskripsi": "Perangkat elektronik" }
 ```
 
-Untuk menjalankan tanpa nodemon, gunakan `npm start`. Server mencetak port yang digunakan ketika berhasil mulai.
-
-## Routing API
-
-Semua route menggunakan prefix `/api/mahasiswa`. Dengan port default, base URL Postman adalah `http://localhost:3000/api/mahasiswa`.
-
-| Method | Path | Kegunaan |
-| --- | --- | --- |
-| `GET` | `/` | Mengambil daftar mahasiswa yang belum di-soft-delete. |
-| `GET` | `/:id` | Mengambil satu mahasiswa berdasarkan ID. |
-| `POST` | `/` | Menambahkan mahasiswa baru. |
-| `PUT` | `/:id` | Mengganti seluruh field mahasiswa; semua field wajib dikirim. |
-| `PATCH` | `/:id` | Mengubah satu atau lebih field mahasiswa. |
-| `DELETE` | `/:id` | Menghapus mahasiswa secara permanen (hard delete). |
-
-`:` pada `:id` berarti bagian URL tersebut harus diganti dengan ID angka, misalnya `/1`. Istilah `path /:id` di atas adalah route PATCH.
-
-Data mahasiswa yang digunakan oleh POST dan PUT berbentuk JSON:
+Respons `201`:
 
 ```json
 {
-  "nim": "2024001",
-  "nama": "Siti Aminah",
-  "email": "siti@example.com",
-  "jurusan": "Teknik Informatika",
-  "angkatan": 2024
+  "status": "success",
+  "message": "Kategori berhasil ditambahkan",
+  "data": {
+    "id": 1,
+    "nama_kategori": "Elektronik",
+    "deskripsi": "Perangkat elektronik",
+    "created_at": "2026-11-26T10:00:00.000Z"
+  }
 }
 ```
 
-`nim`, `nama`, dan `jurusan` harus diisi; email harus memiliki format email; `angkatan` harus berupa angka bulat minimal 2000. `nim` dan `email` harus unik.
+**POST `/api/produk`**
 
-## Soft delete dan hard delete
+```json
+{
+  "kategori_id": 1,
+  "kode_produk": "ELK-001",
+  "nama_produk": "Mouse Wireless",
+  "harga": 85000,
+  "stok": 20
+}
+```
 
-- **Hard delete** menghapus baris dari tabel secara permanen. Repository menjalankan SQL `DELETE FROM mahasiswa`; inilah perilaku route `DELETE /:id` saat ini. Data yang sudah dihapus tidak dapat dipulihkan dari aplikasi.
-- **Soft delete** mempertahankan baris, tetapi mengisi kolom `deleted_at` dengan waktu penghapusan. Repository sudah memiliki method `softDelete`, dan daftar mahasiswa menyaring baris dengan `deleted_at IS NULL`. Namun, controller saat ini memanggil method `remove` (hard delete), bukan `softDelete`; belum ada route restore yang aktif.
+Respons `201`:
 
-Jadi, jangan menganggap permintaan DELETE saat ini sebagai soft delete. Jika soft delete diaktifkan, route/controller perlu diarahkan ke `softDelete`; perilaku pencarian berdasarkan ID dan kebutuhan restore juga perlu ditentukan. Dengan skema unique constraint di atas, NIM/email pada baris yang di-soft-delete tetap dianggap terpakai.
+```json
+{
+  "status": "success",
+  "message": "Produk berhasil ditambahkan",
+  "data": {
+    "id": 1,
+    "kategori_id": 1,
+    "kode_produk": "ELK-001",
+    "nama_produk": "Mouse Wireless",
+    "harga": 85000,
+    "stok": 20,
+    "created_at": "2026-11-26T10:00:00.000Z",
+    "deleted_at": null
+  }
+}
+```
 
-## Pengujian menggunakan Postman
+**PUT `/api/produk/1`** (semua field wajib)
 
-Jalankan server (`npm run dev`), lalu buat request dengan base URL `http://localhost:3000/api/mahasiswa`. Untuk POST, PUT, dan PATCH pilih **Body → raw → JSON** serta header `Content-Type: application/json`.
+```json
+{
+  "kategori_id": 1,
+  "kode_produk": "ELK-001",
+  "nama_produk": "Mouse Wireless Pro",
+  "harga": 99000,
+  "stok": 15
+}
+```
 
-1. **GET `/` — daftar mahasiswa**
-   - Method: `GET`
-   - URL: `http://localhost:3000/api/mahasiswa/`
-   - Hasil berhasil: `200 OK`, response memiliki `status`, `count`, dan array `data`.
+**PATCH `/api/produk/1`** (cukup field yang berubah, minimal satu)
 
-2. **POST `/` — tambah mahasiswa**
-   - Method: `POST`
-   - URL: `http://localhost:3000/api/mahasiswa/`
-   - Body: gunakan JSON contoh di atas.
-   - Hasil berhasil: `201 Created`. Catat nilai `data.id` dari response untuk langkah berikutnya.
+```json
+{ "stok": 40 }
+```
 
-3. **GET `/:id` — cari berdasarkan ID**
-   - Method: `GET`
-   - URL: `http://localhost:3000/api/mahasiswa/1`
-   - Ganti `1` dengan ID dari langkah POST.
-   - Hasil berhasil: `200 OK` dengan object mahasiswa pada `data`; ID yang tidak ditemukan menghasilkan `404 Not Found`.
+**GET `/api/produk`** respons `200`:
 
-4. **PUT `/:id` — ganti seluruh data**
-   - Method: `PUT`
-   - URL: `http://localhost:3000/api/mahasiswa/1`
-   - Body: kirim ulang semua field (`nim`, `nama`, `email`, `jurusan`, `angkatan`) dengan nilai yang ingin disimpan.
-   - Hasil berhasil: `200 OK`. Karena PUT mengganti seluruh data, jangan menghilangkan field wajib.
+```json
+{
+  "status": "success",
+  "message": "Daftar produk berhasil diambil",
+  "count": 1,
+  "data": [ { "id": 1, "kode_produk": "ELK-001", "deleted_at": null } ]
+}
+```
 
-5. **PATCH `/:id` — ubah sebagian data**
-   - Method: `PATCH`
-   - URL: `http://localhost:3000/api/mahasiswa/1`
-   - Body contoh:
+**Contoh respons gagal (validasi)** `400`:
 
-     ```json
-     {
-       "jurusan": "Sistem Informasi"
-     }
-     ```
+```json
+{
+  "status": "error",
+  "message": "Validasi gagal",
+  "errors": ["harga harus bilangan bulat > 0", "stok harus bilangan bulat >= 0"]
+}
+```
 
-   - Hasil berhasil: `200 OK`; kirim minimal satu field. Field yang dikirim tetap harus valid.
+## Keputusan desain
 
-6. **DELETE `/:id` — hapus data**
-   - Method: `DELETE`
-   - URL: `http://localhost:3000/api/mahasiswa/1`
-   - Hasil berhasil: `204 No Content` tanpa response body. Saat ini operasi ini adalah hard delete.
+### 1. Mengapa ada PUT dan PATCH
 
-Untuk menguji perubahan dan penghapusan, lakukan GET `/:id` atau GET `/` setelah request tersebut. ID harus bilangan bulat positif; ID tidak valid menghasilkan `400 Bad Request`. NIM atau email duplikat menghasilkan `409 Conflict`.
+- **PUT** mengganti **seluruh** representasi produk. Semua field wajib dikirim, dan kalau ada yang kurang API membalas `400`. Dengan begitu hasil PUT selalu pasti: data akhir sama dengan body yang dikirim, dan mengirim request yang sama berulang kali menghasilkan keadaan yang sama (idempoten).
+- **PATCH** mengubah **sebagian** field. Cocok untuk kasus yang sering terjadi, misalnya hanya memperbarui `stok` atau `harga`, tanpa mengirim ulang semua data. Field yang tidak dikirim tidak berubah, dan body kosong `{}` ditolak `400`.
+- Keduanya memakai aturan validasi yang sama. Perbedaannya hanya pada apakah semua field wajib (middleware `validateProduk`) atau hanya field yang dikirim (`validatePatch`).
+
+### 2. Perilaku soft delete terhadap UNIQUE
+
+`kode_produk` tetap `UNIQUE` pada seluruh baris, **termasuk** baris yang sudah di-soft delete. Memakai kembali kode milik produk yang sudah dihapus tetap dibalas `409 Conflict`. Alasannya:
+
+- Kode produk adalah identitas bisnis. Kode lama bisa masih tercatat di riwayat transaksi, sehingga memakainya kembali untuk barang lain membingungkan.
+- Restore selalu aman. Jika kode boleh dipakai ulang, restore produk lama bisa bentrok dengan produk aktif yang memakai kode yang sama.
+- Sesuai ketentuan soal: constraint `UNIQUE` pada skema tidak diubah.
+
+Konsekuensinya, kode milik produk yang dihapus "terkunci" sampai baris tersebut dihapus permanen.
+
+### 3. Perilaku soft delete terhadap foreign key
+
+Produk yang di-soft delete masih berisi `kategori_id`, sehingga masih merujuk kategorinya. Akibatnya **hard delete kategori tetap ditolak `409`** selama masih ada produk di bawahnya, aktif maupun sudah di-soft delete. Ini disengaja, karena integritas data dijaga oleh foreign key di database, bukan oleh kode aplikasi, dan foreign key sengaja dibuat tanpa `ON DELETE CASCADE`.
+
+Agar kategori bisa dihapus, produk di bawahnya harus dibersihkan lebih dulu. *(Jika nilai tambah dikerjakan:)* hapus permanen lewat `DELETE /api/produk/:id/permanent`. Endpoint itu hanya berlaku untuk produk yang sudah di-soft delete, sedangkan produk aktif ditolak `409`.
+
+### 4. Mengapa hard delete pada tabel induk
+
+- `kategori` hanya pengelompokan. Ia tidak punya nilai riwayat, dan tabelnya tidak memiliki kolom `deleted_at`.
+- Hard delete aman karena foreign key melindunginya: kategori yang masih punya produk tidak akan pernah terhapus (`409`), jadi tidak ada produk "yatim".
+- Data yang bernilai riwayat, yaitu produk (harga, stok, kode), dilindungi dengan soft delete.
+
+### 5. Pemetaan kode error PostgreSQL
+
+| Kode PG | Arti | Terjadi saat | Status API |
+| --- | --- | --- | --- |
+| `23505` | UNIQUE violation | POST/PUT/PATCH dengan `nama_kategori` atau `kode_produk` kembar | `409` |
+| `23503` | FOREIGN KEY violation | Hapus kategori yang masih dirujuk produk | `409` |
+| `23503` | FOREIGN KEY violation | POST/PUT/PATCH produk dengan `kategori_id` yang tidak ada | `422` |
+| lainnya | Error tak terduga | Apa pun | `500` (pesan umum, detail di console) |
+
+Kode `23503` sama, tetapi statusnya berbeda karena operasinya berbeda. Penanganan dilakukan di controller masing-masing operasi, bukan di handler global.
+
+## Hasil pengujian
+
+Tangkapan layar ada di folder `docs/screenshots/`:
+
+- Hasil Collection Runner Folder 1 dan Folder 2
+- Bukti database: setelah S07, setelah S10, setelah S14
+
+## Dokumentasi tambahan
+
+| Dokumen | Isi |
+| --- | --- |
+| [01-pemahaman-soal](docs/01-pemahaman-soal.md) | Ringkasan permintaan dosen dan poin nilai |
+| [02-pembagian-peran](docs/02-pembagian-peran.md) | Pembagian tugas 5 anggota |
+| [03-jebakan-dan-solusi](docs/03-jebakan-dan-solusi.md) | Jebakan di soal dan kode contoh, beserta solusinya |
+| [04-spesifikasi-api](docs/04-spesifikasi-api.md) | Aturan validasi, status code, format respons |
+| [05-panduan-postman](docs/05-panduan-postman.md) | Struktur collection dan skrip test |
+| [06-checklist-qa-celah](docs/06-checklist-qa-celah.md) | Skenario uji tambahan |
+| [07-checklist-pengumpulan](docs/07-checklist-pengumpulan.md) | Daftar cek sebelum submit |
