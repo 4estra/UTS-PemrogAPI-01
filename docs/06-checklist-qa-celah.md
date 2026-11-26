@@ -1,3 +1,18 @@
+<div align="center">
+
+[🏠 README](../README.md) •
+[01 Soal](01-pemahaman-soal.md) •
+[02 Peran](02-pembagian-peran.md) •
+[03 Jebakan](03-jebakan-dan-solusi.md) •
+[04 Spesifikasi](04-spesifikasi-api.md) •
+[05 Postman](05-panduan-postman.md) •
+[06 QA](06-checklist-qa-celah.md) •
+[07 Pengumpulan](07-checklist-pengumpulan.md)
+
+</div>
+
+---
+
 # 06. Checklist QA dan Uji Celah
 
 Skenario di luar S01-S15 dan N01-N14 untuk menemukan bug sebelum dosen menemukannya. Tandai hasilnya dengan ✅ / ❌.
