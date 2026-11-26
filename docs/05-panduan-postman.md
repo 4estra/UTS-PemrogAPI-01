@@ -1,13 +1,6 @@
----
-title: Panduan Postman
-nav_order: 5
----
-
-{% raw %}
-
 <div align="center">
 
-[🏠 README](../README.md) •
+[🏠 README](https://github.com/FirmanSyah2078/UTS-PemrogAPI-01#readme) •
 [01 Soal](01-pemahaman-soal.md) •
 [02 Peran](02-pembagian-peran.md) •
 [03 Jebakan](03-jebakan-dan-solusi.md) •
@@ -241,4 +234,3 @@ Cara: klik Send satu per satu sampai S07 → screenshot DB → lanjut S08-S10 �
 - Collection: `uts.postman_collection.json` (Collection v2.1) di root repo.
 - Environment: ekspor juga (mis. `uts.postman_environment.json`) agar penguji bisa memakai `baseUrl` yang sama.
 
-{% endraw %}

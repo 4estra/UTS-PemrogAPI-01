@@ -1,11 +1,6 @@
----
-title: Pemahaman Soal
-nav_order: 1
----
-
 <div align="center">
 
-[🏠 README](../README.md) •
+[🏠 README](https://github.com/FirmanSyah2078/UTS-PemrogAPI-01#readme) •
 [01 Soal](01-pemahaman-soal.md) •
 [02 Peran](02-pembagian-peran.md) •
 [03 Jebakan](03-jebakan-dan-solusi.md) •
