@@ -1,0 +1,9 @@
+title: UTS-PemrogAPI
+description: Dokumentasi REST API Toko Online
+remote_theme: just-the-docs/just-the-docs
+plugins:
+  - jekyll-remote-theme
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: false
