@@ -1,3 +1,8 @@
+---
+title: Checklist Pengumpulan
+nav_order: 7
+---
+
 <div align="center">
 
 [🏠 README](../README.md) •
