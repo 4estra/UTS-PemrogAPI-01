@@ -3,6 +3,8 @@ title: Jebakan dan Solusi
 nav_order: 3
 ---
 
+{% raw %}
+
 <div align="center">
 
 [🏠 README](../README.md) •
@@ -133,3 +135,5 @@ Untuk permanent delete, bedakan "id tidak ada" (404) dengan "ada tapi masih akti
 entity.parse.failed          → error handler app.js → 400
 lainnya                      → console.error + 500 "Terjadi kesalahan pada server"
 ```
+
+{% endraw %}
