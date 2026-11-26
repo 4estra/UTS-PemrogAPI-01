@@ -1,3 +1,8 @@
+---
+title: Checklist QA
+nav_order: 6
+---
+
 <div align="center">
 
 [🏠 README](../README.md) •
