@@ -24,11 +24,11 @@ Dua resource one-to-many: `kategori` (hard delete) → `produk` (soft delete)
 
 | Nama | NIM | Peran |
 | --- | --- | --- |
-| [nama] | [nim] | Database dan setup |
-| [nama] | [nim] | Kategori (induk) |
-| [nama] | [nim] | Produk (anak) |
-| [nama] | [nim] | Postman dan error handling |
-| [nama] | [nim] | QA dan dokumentasi |
+| M. Naufal Abbad | [24104410049] | Database dan setup |
+| Firlian Firman syah | [24104410057] | Pondasi (config, app.js, server.js) |
+| Handika Rado Arganata | [24104410051] | Kategori (induk) |
+| Eko Ramadani | [24104410087] | Produk (anak) |
+| Ahmad Yusron Fadhil | [24104410050] | Middleware, Postman, QA, dan dokumentasi |
 
 ## Teknologi
 
@@ -113,7 +113,7 @@ erDiagram
 ## Struktur project
 
 ```text
-api-uts/
+UTS-PemrogAPI-01/
 ├── .env.example
 ├── .gitignore
 ├── package.json
