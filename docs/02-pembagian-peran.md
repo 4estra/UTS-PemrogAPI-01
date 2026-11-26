@@ -15,46 +15,51 @@
 
 # 02. Pembagian Peran
 
-Dibagi 5 tahap berurutan, dari fondasi sampai uji celah. Tahap 4 dan 5 baru bermakna setelah tahap 2 dan 3 selesai.
+Lima peran, semua **kerja paralel** sejak awal — asalkan kontrak (nama tabel/kolom dari Database, bentuk respons, nama file) sudah dibekukan duluan. Urutan di bawah ini cuma urutan **push ke `main`**, bukan urutan mulai kerja.
 
 ```text
-[1 Database & Setup] → [2 Kategori] + [3 Produk] → [4 Postman & Error Handling] → [5 QA & Dokumentasi]
+A Database → B Pondasi → C Kategori + D Produk (barengan) → E Middleware, Postman & Dokumentasi
 ```
 
-## Tahap 1: Database dan Setup
+## A — Database
 
-**Pemilik:** [nama]
+**Pemilik:** Abbad
 
 | Tugas | Hasil |
 | --- | --- |
 | Instal PostgreSQL, buat `db_uts` | Database siap |
 | Tulis `sql/schema.sql` persis sesuai tabel soal | `schema.sql` |
 | Tulis `sql/seed.sql` (min. 3 kategori, 5 produk) | `seed.sql` |
+
+Paling kritis: anggota lain butuh nama tabel dan kolom dari sini sebelum bisa menulis repository. Perhatikan: [jebakan database](03-jebakan-dan-solusi.md#d-database).
+
+## B — Pondasi
+
+**Pemilik:** Firman
+
+| Tugas | Hasil |
+| --- | --- |
 | Setup project: `package.json`, `.env.example`, `.gitignore` | File dasar |
-| `src/config/db.js` (pg Pool) | Koneksi |
-| `src/app.js` dan `src/server.js` | Kerangka aplikasi |
+| `src/config/db.js`, satu `Pool` dari `pg`, baca dari `.env` | Koneksi |
+| `src/app.js`: `express.json()`, router, handler 404 "Route tidak ditemukan", error handler terpusat (JSON rusak → 400, lainnya → 500) | Kerangka aplikasi |
+| `src/server.js`: cuma `listen` | Entry point |
 
-Perhatikan: [jebakan database](03-jebakan-dan-solusi.md#d-database).
+## C — Kategori (induk)
 
-## Tahap 2: Kategori (induk)
-
-**Pemilik:** [nama]
+**Pemilik:** Arganata
 
 | Tugas | File |
 | --- | --- |
-| Middleware id | `middlewares/parseId.js` |
-| Validasi kategori | `middlewares/validateKategori.js` |
 | Repository (findAll, findById, create, remove) | `repositories/kategoriRepository.js` |
 | Controller, termasuk 23505 → 409 dan 23503 → 409 | `controllers/kategoriController.js` |
 | Route | `routes/kategoriRoutes.js` |
 
-## Tahap 3: Produk (anak)
+## D — Produk (anak)
 
-**Pemilik:** [nama]
+**Pemilik:** Eko
 
 | Tugas | File |
 | --- | --- |
-| Validasi produk (dua fungsi) | `middlewares/validateProduk.js` |
 | Repository dengan filter `deleted_at IS NULL` di setiap query | `repositories/produkRepository.js` |
 | Controller: GET (daftar, by id, nested), POST, PUT, PATCH, soft delete, restore | `controllers/produkController.js` |
 | Route | `routes/produkRoutes.js` |
@@ -62,33 +67,40 @@ Perhatikan: [jebakan database](03-jebakan-dan-solusi.md#d-database).
 
 Titik rawan: 23503 → **422** pada POST/PUT/PATCH, nested route (404 vs 200 kosong), filter soft delete.
 
-## Tahap 4: Postman dan Error Handling
+C dan D bisa jalan **barengan** karena file beda, asal nama tabel/kolom dari A sudah dikonfirmasi.
 
-**Pemilik:** [nama]
+## E — Middleware, Postman, QA, dan Dokumentasi
 
-| Tugas | Hasil |
+**Pemilik:** Yusron
+
+| Tugas | File / Hasil |
 | --- | --- |
-| Handler 404 "Route tidak ditemukan" dan error handler terpusat (JSON rusak → 400, lainnya → 500) | `app.js` |
-| Collection, Environment, Folder 1-Alur Utama (S01-S15) lengkap dengan `pm.test` | `uts.postman_collection.json` |
-| Memastikan Folder 1 hijau saat dijalankan berulang | Runner hijau |
+| `parseId`: id di URL harus bilangan bulat positif, kalau tidak 400 | `middlewares/parseId.js` |
+| Validasi kategori (POST/PUT field lengkap) | `middlewares/validateKategori.js` |
+| Validasi produk, dua fungsi (`validate...` untuk POST/PUT lengkap, `validatePatch` untuk field yang dikirim saja), kumpulkan semua error ke array `errors` | `middlewares/validateProduk.js` |
+| Collection + Environment, Folder 1-Alur Utama (S01-S15) lengkap dengan `pm.test` | `uts.postman_collection.json` |
+| Folder 2-Skenario Error (N01-N14) dan Folder 3-Bukti Delete | di collection |
+| Uji celah di luar skenario soal | [06-checklist-qa-celah](06-checklist-qa-celah.md) |
+| Screenshot Runner dan bukti database | `docs/screenshots/` |
+| Menulis dan merapikan `README.md` | README final |
+| Pemeriksaan akhir sebelum submit | [07-checklist-pengumpulan](07-checklist-pengumpulan.md) |
 
 Panduan: [05-panduan-postman](05-panduan-postman.md).
 
-## Tahap 5: QA, Cari Celah, dan Dokumentasi
+## Urutan push ke `main`
 
-**Pemilik:** [nama]
+Kerja paralel, tapi merge harus urut biar tidak konflik:
 
-| Tugas | Hasil |
-| --- | --- |
-| Folder 2-Skenario Error (N01-N14) | di collection |
-| Uji celah di luar skenario soal | [06-checklist-qa-celah](06-checklist-qa-celah.md) |
-| Screenshot Runner dan bukti database (Folder 3) | `docs/screenshots/` |
-| Menulis dan merapikan `README.md` | README final |
-| Pemeriksaan akhir sebelum submit | [07-checklist-pengumpulan](07-checklist-pengumpulan.md) |
+1. **A** push dulu — folder `sql/`
+2. **B** push — `config/`, `app.js`, `server.js`
+3. **C** dan **D** push, bisa barengan karena file beda
+4. **E** push terakhir — `middlewares/`, `uts.postman_collection.json`, `README.md`
+
+Kalau konflik: pull dulu, selesaikan di lokal, baru push.
 
 ## Aturan kerja bersama
 
 - Satu branch per orang, gabungkan ke `main` lewat pull request atau merge setelah dicek.
 - Jangan commit `.env` atau `node_modules`.
-- Bentuk respons harus seragam: `{ status, message, data }`. Sepakati sebelum mulai koding.
+- Bentuk respons harus seragam: `{ status, message, data }` (gagal: `{ status, message, errors }`, `errors` hanya untuk kegagalan validasi — lihat [04-spesifikasi-api](04-spesifikasi-api.md)). Sepakati sebelum mulai koding.
 - Setiap anggota menjalankan Folder 1 di Postman sebelum merge ke `main`.
