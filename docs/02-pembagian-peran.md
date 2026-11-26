@@ -1,3 +1,18 @@
+<div align="center">
+
+[🏠 README](../README.md) •
+[01 Soal](01-pemahaman-soal.md) •
+[02 Peran](02-pembagian-peran.md) •
+[03 Jebakan](03-jebakan-dan-solusi.md) •
+[04 Spesifikasi](04-spesifikasi-api.md) •
+[05 Postman](05-panduan-postman.md) •
+[06 QA](06-checklist-qa-celah.md) •
+[07 Pengumpulan](07-checklist-pengumpulan.md)
+
+</div>
+
+---
+
 # 02. Pembagian Peran
 
 Dibagi 5 tahap berurutan, dari fondasi sampai uji celah. Tahap 4 dan 5 baru bermakna setelah tahap 2 dan 3 selesai.
