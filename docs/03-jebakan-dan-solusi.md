@@ -1,3 +1,8 @@
+---
+title: Jebakan dan Solusi
+nav_order: 3
+---
+
 <div align="center">
 
 [🏠 README](../README.md) •
