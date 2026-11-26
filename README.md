@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛒 UTS-PemrogAPI - [namakelompok]
+# 🛒 UTS-PemrogAPI - Kelompok 1
 
 **REST API Toko Online dengan Express.js dan PostgreSQL**
 
