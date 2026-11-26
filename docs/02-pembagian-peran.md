@@ -1,3 +1,8 @@
+---
+title: Pembagian Peran
+nav_order: 2
+---
+
 <div align="center">
 
 [🏠 README](../README.md) •
