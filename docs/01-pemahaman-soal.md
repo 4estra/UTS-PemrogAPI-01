@@ -1,3 +1,8 @@
+---
+title: Pemahaman Soal
+nav_order: 1
+---
+
 <div align="center">
 
 [🏠 README](../README.md) •
